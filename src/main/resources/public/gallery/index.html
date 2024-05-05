@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<header>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+</header>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <button onclick="getDirContent()">获取目录下子节点</button>
+
+    <button onclick="getTest()">getTest</button>
+</body>
+
+<script type="text/javascript">
+
+function getDirContent(){
+    postData = {
+        "prePath":"gallery",
+        "relativePath":""
+    }
+    $.ajax({
+        url:'/gallery/getDirContent',
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        data: JSON.stringify(postData),
+        processData: true,
+        success:function(res){
+            console.log(res)
+        }
+    })
+}
+
+
+function getTest(){
+    postData = {
+        "prePath":"gallery",
+        "relativePath":""
+    }
+    $.ajax({
+        url:'/gallery/test',
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        data: JSON.stringify(postData),
+        processData: true,
+        success:function(res){
+            console.log(res)
+        }
+    })
+}
+
+</script>
+</html>

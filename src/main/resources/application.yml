@@ -1,0 +1,57 @@
+debug: false
+
+static:
+  upload:
+  tesseract:
+
+
+gallery:
+  baseDir:
+
+server:
+  port: 8081
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+#  tomcat:
+#    basedir: ./
+#    accesslog:
+#      enabled: true
+#      pattern: '%t %{trace_id}i %a %U %s %D %b %{User-Agent}i [%{postdata}r]'
+#      prefix: access_log
+#      suffix: .log
+#    max-threads: 500
+#    accept-count: 500
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#
+spring:
+  #  mvc:
+  #    view:
+  #      prefix: /public
+  #      suffix: .html
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:sqlite:ex1
+    driverClassName: org.sqlite.JDBC
+    hikari:
+      connection-timeout: 30000 #此属性控制客户端(即您)将等待来自池的连接的最大毫秒数
+      idle-timeout: 60000 #此属性控制允许连接在池中闲置的最长时间
+      max-lifetime: 120000 #此属性控制池中连接的最大生存期
+      maximum-pool-size: 10 #此属性控制池允许达到的最大大小，包括空闲和正在使用的连接
+      minimum-idle: 3
+#  cache:
+#    ehcache:
+#      config: classpath:ehcache.xml
+#custom:
+#  showSql: false
+#
+
+logging:
+  config: classpath:log4j2-spring.xml

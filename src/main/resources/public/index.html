@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<header>
+    <script src="./js/jquery-3.6.0.min.js"></script>
+</header>
+<head>
+    <meta charset="UTF-8">
+    <title>?</title>
+</head>
+<body>
+    <div id="upload">
+<!--        <h4>上传图片提取图片文字</h4>-->
+        <div style="text-align: center;">
+            <div style="display: inline-block;    height: 300px;width:auto">
+                <div style="    display: inline-block;">
+                    <img src="./img/m_down.png" style="    width: 200px;">
+                    <p>
+                        在这选择图片上传图片
+                        <br>
+                        （动图因为耗时太长不会识别文字）
+                    </p>
+                </div>
+                <input type="file" name="file" id="upload_input"/>
+                <input type="submit" value="上传" onclick="postFile()"/>
+                <img src="" id="upload_shows" style="max-width: 300px;max-height: 300px;">
+            </div>
+
+        </div>
+
+        <div style="text-align: center;height: 300px;">
+            <div>
+                <div style="display: inline-block;">
+                    <div style="display: inline-block;">
+                        <img src="./img/m_right.png" style="    width: 200px;">
+                        <p>
+                            这里是识别文字结果
+                            <br>
+                            识别准确度有待提高
+                        </p>
+                    </div>
+                    <textarea id="ocr_text" readonly style="width: 500px;height: 200px;">
+                </textarea>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center;height: 300px;">
+            <div>
+                <div style="display: inline-block;">
+                    <textarea id="update_text" style="width: 500px;height: 200px;">
+                    </textarea>
+                    <button onclick="updateText()">更新文字</button>
+                    <div style="display: inline-block;">
+                        <img src="./img/m_left.png" style="width:200px">
+                        <p>
+                            这里可以自行更新识别的文字
+                            <br>
+                            感谢您为提高准确度做出的贡献
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="search" style="margin-bottom: 500px;margin-top: 20px;">
+<!--        <h4>通过文字搜索图片</h4>-->
+        <div style="text-align: center;">
+            <div style="    display: inline-block;">
+                <img src="./img/m_down.png" style="    width: 200px;">
+                <p>在这输入关键字搜索图片</p>
+            </div>
+            <input id="search_text" />
+
+            <button onclick="searchImg()">查找图片</button>
+            <div id="show_area">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align: center;">
+        <div style="    display: inline-block;">
+            <img src="./img/m_all.png" style="    width: 200px;">
+            <p>占个位子放更新</p>
+        </div>
+
+    </div>
+</body>
+
+<script type="text/javascript">
+function postFile(){
+    var formData = new FormData();
+    formData.append("file",$("#upload_input")[0].files[0]);
+    formData.append("service",'/api/uploadimg');
+    $.ajax({
+        url:'/api/uploadimg', /*接口域名地址*/
+        type:'post',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success:function(res){
+            console.log(res);
+            if(res['status']=='ok'){
+                $("#upload_shows")[0].src=res.data['img_url']
+                $("#upload_shows")[0].md5_data=res.data['img_md5']
+                $("#ocr_text")[0].value=res.data['img_text']
+                $("#update_text")[0].src=res.data['img_text']
+            }
+        }
+    })
+}
+function updateText(){
+
+
+    postData = {
+        "imgMd5":$("#upload_shows")[0].md5_data,
+        "updateText":$("#update_text")[0].value
+    }
+    $.ajax({
+        url:'/api/updateText', /*接口域名地址*/
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        data: JSON.stringify(postData),
+        processData: true,
+        success:function(res){
+            console.log("感谢更新");
+
+        }
+    })
+}
+
+function searchImg(){
+
+
+    searchText = $("#search_text")[0].value
+    $.ajax({
+        url:'/api/search?ocrText='+searchText, /*接口域名地址*/
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        processData: true,
+        success:function(res){
+            $("#show_area")[0].innerHTML = ""
+            console.log(res);
+            imgs = res['data']['imgs']
+            for(var i = 0;i<imgs.length;i++){
+                img = imgs[i]
+                showImg =  new Image()
+                showImg.src = img['img_url']
+                showImg.style = "max-width: 300px;"
+
+                $("#show_area")[0].append(showImg)
+            }
+        }
+    })
+}
+</script>
+</html>

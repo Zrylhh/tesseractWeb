@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error" strict="true" name="commonLogConfig">
+    <Properties>
+        <Property name="filename">target/test.log</Property>
+        <property name="logpattern" value="%date{HH:mm:ss.SSS} [%thread] [%X{trace_id}] %-5level %logger{36} - %msg%n" />
+        <property name="logname" value="logs/tesseract-service.log" />
+    </Properties>
+    <Filter type="ThresholdFilter" level="DEBUG"/>
+
+    <Appenders>
+        <Appender type="Console" name="STDOUT">
+            <Layout type="PatternLayout" pattern="${logpattern}"/>
+        </Appender>
+        <RollingFile name="errorFile" fileName="logs/error-tesseract-service.log"
+                     filePattern="logs/$${date:yyyy-MM}/error-tesseract-service-%d{MM-dd-yyyy}-%i.log.gz">
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${logpattern}"/>
+<!--            <PatternLayout>-->
+<!--                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>-->
+<!--            </PatternLayout>-->
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="infoFile" fileName="logs/info-tesseract-service.log"
+                     filePattern="logs/$${date:yyyy-MM}/info-tesseract-service-%d{MM-dd-yyyy}-%i.log.gz">
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${logpattern}"/>
+<!--            <PatternLayout>-->
+<!--                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>-->
+<!--            </PatternLayout>-->
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+<!--        <Logger name="org.apache.logging.log4j.test1" level="debug" additivity="false">-->
+<!--            <Filter type="ThreadContextMapFilter">-->
+<!--                <KeyValuePair key="test" value="123"/>-->
+<!--            </Filter>-->
+<!--            <AppenderRef ref="STDOUT"/>-->
+<!--        </Logger>-->
+
+<!--        <Logger name="org.apache.logging.log4j.test2" level="debug" additivity="false">-->
+<!--            <AppenderRef ref="File"/>-->
+<!--        </Logger>-->
+
+        <Root level="trace">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="infoFile"/>
+            <AppenderRef ref="errorFile"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

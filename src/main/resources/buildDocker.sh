@@ -1,0 +1,1 @@
+docker build -t tesseract_web:latest --rm --iidfile build_id.txt .
