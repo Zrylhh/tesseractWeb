@@ -108,6 +108,41 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
     }
 
     @Override
+    public List<ImgRecord> getRandomImg(Integer number) {
+
+        String sql =  " select * from img_record ir order by random() limit  " +number ;
+        try {
+
+            PreparedStatementCreator creator = new PreparedStatementCreator() {
+                @Override
+                public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                    PreparedStatement preparedStatement = con.prepareStatement(sql);
+                    return preparedStatement;
+                }
+            };
+            // TODO 附带查询出相关的标签
+            List<ImgRecord> resultSet = jdbcTemplate.query(creator, new RowMapper<ImgRecord>() {
+                @Override
+                public ImgRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ImgRecord result = new ImgRecord();
+                    result.setMd5Name(rs.getString("md5_name"));
+                    result.setOriginalName(rs.getString("original_name"));
+                    result.setOcrText(rs.getString("ocr_text"));
+                    result.setLsUpTime(rs.getString("lsup_time"));
+                    result.setUploadIp(rs.getString("upload_ip"));
+                    result.setFilePath(rs.getString("file_path"));
+                    result.setFileSuffix(rs.getString("file_suffix"));
+                    return result;
+                }
+            });
+            return resultSet;
+        }catch (EmptyResultDataAccessException e){
+            return null ;
+        }
+
+    }
+
+    @Override
     public List<ImgRecord> selectByOrcText(String octText) {
 
         String sql =  "select a.* " +

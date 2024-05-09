@@ -18,4 +18,5 @@ public interface ImgRecordDao {
     public ImgRecord select(String md5Name);
     public int updateText(UpdateTextReq reqDto);
     public List<ImgRecord> selectByOrcText(String octText);
+    public List<ImgRecord> getRandomImg(Integer number);
 }

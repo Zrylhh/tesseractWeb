@@ -16,4 +16,5 @@ public interface UploadImgService {
     public ResponseResult procUploadImg(MultipartFile file,String realPath);
     public ResponseResult updateText(UpdateTextReq reqDto);
     public ResponseResult searchByText(String ocrText);
+    public ResponseResult getRandomImg();
 }

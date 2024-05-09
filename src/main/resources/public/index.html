@@ -5,7 +5,7 @@
 </header>
 <head>
     <meta charset="UTF-8">
-    <title>?</title>
+    <title>火星表情博物馆</title>
 </head>
 <body>
     <div id="upload">
@@ -61,7 +61,7 @@
             </div>
         </div>
     </div>
-    <div id="search" style="margin-bottom: 500px;margin-top: 20px;">
+    <div id="search" style="margin-bottom: 100px;margin-top: 20px;">
 <!--        <h4>通过文字搜索图片</h4>-->
         <div style="text-align: center;">
             <div style="    display: inline-block;">
@@ -78,13 +78,28 @@
 
     </div>
 
-    <div style="text-align: center;">
-        <div style="    display: inline-block;">
-            <img src="./img/m_all.png" style="    width: 200px;">
-            <p>占个位子放更新</p>
+
+    <div id="gacha" style="margin-bottom: 100px;margin-top: 20px;">
+        <!--        <h4>十连</h4>-->
+        <div style="text-align: center;">
+            <div style="    display: inline-block;">
+                <img src="./img/gacha.jpg" style="    width: 300px;">
+                <button onclick="gachaImg()">十连抽随机图片</button>
+            </div>
+            <div id="gacha_show_area" style="margin-top:30px">
+
+            </div>
         </div>
 
     </div>
+
+<!--    <div style="text-align: center;">-->
+<!--        <div style="    display: inline-block;">-->
+<!--            <img src="./img/m_all.png" style="    width: 200px;">-->
+<!--            <p>占个位子放更新</p>-->
+<!--        </div>-->
+
+<!--    </div>-->
 </body>
 
 <script type="text/javascript">
@@ -117,7 +132,7 @@ function updateText(){
         "updateText":$("#update_text")[0].value
     }
     $.ajax({
-        url:'/api/updateText', /*接口域名地址*/
+        url:'/api/updateText',
         type:'post',
         contentType:'application/json;charset=UTF-8',
         data: JSON.stringify(postData),
@@ -134,7 +149,7 @@ function searchImg(){
 
     searchText = $("#search_text")[0].value
     $.ajax({
-        url:'/api/search?ocrText='+searchText, /*接口域名地址*/
+        url:'/api/search?ocrText='+searchText,
         type:'post',
         contentType:'application/json;charset=UTF-8',
         processData: true,
@@ -144,11 +159,41 @@ function searchImg(){
             imgs = res['data']['imgs']
             for(var i = 0;i<imgs.length;i++){
                 img = imgs[i]
-                showImg =  new Image()
-                showImg.src = img['img_url']
-                showImg.style = "max-width: 300px;"
+                var cellDiv = document.createElement("div");
+                cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
+                cellDiv.innerHTML='<img src="'+img['img_url']+'" style="max-width: 150px;">';
 
-                $("#show_area")[0].append(showImg)
+<!--                showImg =  new Image()-->
+<!--                showImg.src = img['img_url']-->
+<!--                showImg.style = "max-width: 150px;"-->
+
+<!--                cellCss = '<div style="width:150px;height:150px"><img src="'+img['img_url']+'" style="max-width: 150px;"></div>';-->
+
+                $("#show_area")[0].append(cellDiv)
+            }
+        }
+    })
+}
+
+
+function gachaImg(){
+
+    $.ajax({
+        url:'/api/gacha',
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        processData: true,
+        success:function(res){
+            $("#gacha_show_area")[0].innerHTML = ""
+            console.log(res);
+            imgs = res['data']['imgs']
+            for(var i = 0;i<imgs.length;i++){
+                img = imgs[i]
+                var cellDiv = document.createElement("div");
+                cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
+                cellDiv.innerHTML='<img src="'+img['img_url']+'" style="max-width: 150px;">';
+
+                $("#gacha_show_area")[0].append(cellDiv)
             }
         }
     })

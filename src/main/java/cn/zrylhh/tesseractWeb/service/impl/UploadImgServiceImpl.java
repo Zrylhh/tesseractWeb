@@ -174,6 +174,32 @@ public class UploadImgServiceImpl implements UploadImgService {
         return result;
     }
 
+    @Override
+    public ResponseResult getRandomImg() {
+        List<ImgRecord> imgRecords = imgRecordDao.getRandomImg(10);
+        ResponseResult result = new ResponseResult();
+        result.setStatus("ok");
+        Map dataMap = new HashMap();
+
+        List<Map<String,String>> imgs = new ArrayList<>();
+
+        imgRecords.forEach(imgRecord -> {
+            Map<String,String> img = new HashMap<>();
+            img.put("img_text",imgRecord.getOcrText());
+            if(imgRecord.getFileSuffix().startsWith(".")){
+                img.put("img_url","/up/"+imgRecord.getMd5Name()+imgRecord.getFileSuffix());
+            }else{
+                img.put("img_url","/up/"+imgRecord.getMd5Name()+"."+imgRecord.getFileSuffix());
+            }
+            img.put("img_md5",imgRecord.getMd5Name());
+            imgs.add(img);
+        });
+        dataMap.put("imgs",imgs);
+
+        result.setData(dataMap);
+        return result;
+    }
+
     public static void main(String[] args) throws IOException {
 
         Tika tika = new Tika();

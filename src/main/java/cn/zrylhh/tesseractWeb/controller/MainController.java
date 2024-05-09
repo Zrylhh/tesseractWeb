@@ -70,6 +70,14 @@ public class MainController {
         return null ;
     }
 
+    //随机图片
+    @RequestMapping(value="/gacha", method = RequestMethod.POST)
+    public @ResponseBody ResponseResult getRandomImg(HttpServletRequest request) {
+
+        ResponseResult responseResult = uploadImgService.getRandomImg();
+        return responseResult;
+    }
+
     //测试方法
     @RequestMapping(value="/test", method = RequestMethod.GET)
     public @ResponseBody ResponseResult test(HttpServletRequest request) {
