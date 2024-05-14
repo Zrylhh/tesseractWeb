@@ -1,6 +1,7 @@
 package cn.zrylhh.tesseractWeb.dao;
 
 import cn.zrylhh.tesseractWeb.model.ImgRecord;
+import cn.zrylhh.tesseractWeb.model.ImgTag;
 import cn.zrylhh.tesseractWeb.model.UpdateTextReq;
 
 import java.util.List;
@@ -19,4 +20,5 @@ public interface ImgRecordDao {
     public int updateText(UpdateTextReq reqDto);
     public List<ImgRecord> selectByOrcText(String octText);
     public List<ImgRecord> getRandomImg(Integer number);
+    public List<ImgTag> getTagsById(String md5Id);
 }

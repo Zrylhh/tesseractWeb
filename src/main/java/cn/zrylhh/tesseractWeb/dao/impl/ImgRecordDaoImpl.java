@@ -2,6 +2,7 @@ package cn.zrylhh.tesseractWeb.dao.impl;
 
 import cn.zrylhh.tesseractWeb.dao.ImgRecordDao;
 import cn.zrylhh.tesseractWeb.model.ImgRecord;
+import cn.zrylhh.tesseractWeb.model.ImgTag;
 import cn.zrylhh.tesseractWeb.model.UpdateTextReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -60,7 +61,7 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
     public ImgRecord select(String md5Name) {
 //        md5_name|original_name|ocr_text|lsup_time|upload_ip|file_path|
         String sql = "select md5_name,original_name,ocr_text,lsup_time,upload_ip,file_path ,file_suffix " +
-                " from img_record where md5_name = '" + md5Name+"'";
+                " from img_record where md5_name = ?";
         try {
             ImgRecord imgRecord = jdbcTemplate.queryForObject(sql, new RowMapper<ImgRecord>() {
                 @Override
@@ -75,7 +76,7 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
                     result.setFileSuffix(rs.getString("file_suffix"));
                     return result;
                 }
-            });
+            },md5Name);
 
             return imgRecord;
         }catch (EmptyResultDataAccessException e){
@@ -137,6 +138,7 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
             });
             return resultSet;
         }catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
             return null ;
         }
 
@@ -183,7 +185,31 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
             });
             return resultSet;
         }catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
             return null ;
         }
+    }
+
+    @Override
+    public List<ImgTag> getTagsById(String md5Id) {
+        String sql = "select md5_name,update_ocr_text " +
+                " from img_record_update where md5_name = ? ";
+        try {
+            List<ImgTag> resultSet = jdbcTemplate.query(sql, new RowMapper<ImgTag>() {
+                @Override
+                public ImgTag mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ImgTag result = new ImgTag();
+                    result.setMd5Name(rs.getString("md5_name"));
+                    result.setTag(rs.getString("update_ocr_text"));
+                    return result;
+                }
+            },md5Id);
+
+            return resultSet;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
     }
 }

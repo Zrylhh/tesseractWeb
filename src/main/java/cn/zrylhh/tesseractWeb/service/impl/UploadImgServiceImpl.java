@@ -2,6 +2,7 @@ package cn.zrylhh.tesseractWeb.service.impl;
 
 import cn.zrylhh.tesseractWeb.dao.ImgRecordDao;
 import cn.zrylhh.tesseractWeb.model.ImgRecord;
+import cn.zrylhh.tesseractWeb.model.ImgTag;
 import cn.zrylhh.tesseractWeb.model.ResponseResult;
 import cn.zrylhh.tesseractWeb.model.UpdateTextReq;
 import cn.zrylhh.tesseractWeb.service.UploadImgService;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 项目名：TesseractWeb.
@@ -123,6 +125,19 @@ public class UploadImgServiceImpl implements UploadImgService {
                 data.put("img_url","/up/"+targetFile.getName());
                 data.put("img_md5",md5Info);
                 result.setData(data);
+            }
+
+            // 查询相关的标签，组合放到返回值中
+            List<ImgTag> tags = imgRecordDao.getTagsById(md5Info);
+            String tagsStr = "";
+            if(tags!=null){
+                for (int i = 0; i < tags.size(); i++) {
+                    tagsStr += tags.get(i).getTag();
+                    if(i<tags.size()-1){
+                        tagsStr += "\n";
+                    }
+                }
+                result.getData().put("img_tags",tagsStr);
             }
 
         } catch (FileNotFoundException e) {
