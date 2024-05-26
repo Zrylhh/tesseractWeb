@@ -23,7 +23,6 @@
                 <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">
                     点击查看详细：
                     <div class="layui-upload-list" id="upload_show_area" style="min-height:120px">
-                        <img src="" class="layui-upload-img">
                     </div>
                 </blockquote>
             </div>
@@ -68,25 +67,25 @@
 
 <script id="img_detail">
 
-<div style="padding: 5px; background-color: #393D49; color: #fff; font-weight: 300;">
-    <div style="display:inline-block;max-width:500px;width:40%;text-align:center">
-        <img src='<img_url>' style="max-height:100%;max-width:100%">
-    </div>
-    <div id="ocr_text" style="display:inline-block;width:59%;text-align:center;position:absolute">
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">识别结果</label>
-            <div class="layui-input-block">
-              <textarea placeholder="<ocr_content_text>" id="ocr_content" class="layui-textarea"></textarea>
+    <div style="padding: 5px; background-color: #393D49; color: #fff; font-weight: 300;">
+        <div style="display:inline-block;max-width:500px;width:40%;text-align:center">
+            <img src='<img_url>' id="img_detail_img" md5_id='<img_id>' style="max-height:100%;max-width:100%">
+        </div>
+        <div id="ocr_text" style="display:inline-block;width:59%;text-align:center;position:absolute">
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">识别结果</label>
+                <div class="layui-input-block">
+                  <textarea placeholder="<ocr_content_text>" id="ocr_content" class="layui-textarea" disabled ></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">已有标签<br>可编辑新增</label>
+                <div class="layui-input-block">
+                  <textarea placeholder="<tags_content_text>" id="tags_content" class="layui-textarea"></textarea>
+                </div>
             </div>
         </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">标签</label>
-            <div class="layui-input-block">
-              <textarea placeholder="<tags_content_text>" id="tags_content" class="layui-textarea"></textarea>
-            </div>
-        </div>
     </div>
-</div>
 </script>
 
 </body>
@@ -110,11 +109,12 @@ layui.use('laypage', function(){
   });
 });
 
-function openImgDetailLayer(imgUrl,ocrText,tagsText){
+function openImgDetailLayer(imgUrl,ocrText,tagsText,imgId){
 
     show_img_str = $('#img_detail').text().replace('<img_url>',imgUrl)
     show_img_str = show_img_str.replace('<ocr_content_text>',ocrText)
     show_img_str = show_img_str.replace('<tags_content_text>',tagsText)
+    show_img_str = show_img_str.replace('<img_id>',imgId)
 
     layer.open({
         type: 1
@@ -122,18 +122,45 @@ function openImgDetailLayer(imgUrl,ocrText,tagsText){
         ,closeBtn: false
         ,area: '800px'
         ,shade: 0.8
+        ,offset: 'auto'
         ,id: 'LAY_show_img_detail'
         ,btn: ['提交', '取消']
+        ,yes: function(index, layero){
+            //
+            console.log('commit')
+            var newTags = $("#tags_content").val()
+            if(newTags!=null && newTags.length>0){
+                postData = {
+                    "imgMd5":$("#img_detail_img").attr('md5_id'),
+                    "updateText": newTags
+                }
+                $.ajax({
+                    url:'/api/updateText',
+                    type:'post',
+                    contentType:'application/json;charset=UTF-8',
+                    data: JSON.stringify(postData),
+                    processData: true,
+                    success:function(res){
+                        console.log("感谢更新");
+                        layer.closeAll();
+                    }
+                })
+            }else{
+                layer.closeAll();
+            }
+
+
+        }
+        ,btn2: function(index, layero){
+            //
+        }
         ,btnAlign: 'c'
         ,moveType: 1 //拖拽模式，0或者1
         ,content: show_img_str
         ,scrollbar: false
-        ,success: function(layero){
-          var btn = layero.find('.layui-layer-btn');
-          btn.find('.layui-layer-btn0').attr({
-            href: 'http://www.layui.com/'
-            ,target: '_blank'
-          });
+        ,offset: 'auto'
+        ,success: function(){
+            // 添加标签
         }
     });
 }
@@ -146,13 +173,28 @@ layui.use('upload', function(){
     ,done: function(res){
         console.log(res)
         if(res['status']=='ok'){
-            $("#upload_show_area").html('<img src="'+res.data['img_url']+'" style="max-height:400px;max-width:400px" class="layui-upload-img">')
-            openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'])
+            $("#upload_show_area").html('<img src="'+res.data['img_url']+'" onclick=showImgDetail("'+res.data['img_md5']+'")  style="max-height:400px;max-width:400px" class="layui-upload-img">')
+            openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'],res.data['img_md5'])
 
         }
     }
   });
 });
+
+function showImgDetail(md5_id){
+    //查询
+    $.ajax({
+        url:'/api/getById?md5Id='+md5_id,
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        processData: true,
+        success:function(res){
+
+            console.log(res);
+            openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'],res.data['img_md5'])
+        }
+    })
+}
 
 </script>
 

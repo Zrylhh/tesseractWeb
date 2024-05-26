@@ -212,4 +212,5 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
         return null;
 
     }
+
 }

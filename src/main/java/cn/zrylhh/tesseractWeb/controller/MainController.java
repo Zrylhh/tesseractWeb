@@ -78,6 +78,20 @@ public class MainController {
         return responseResult;
     }
 
+
+    //处理
+    @RequestMapping(value="/getById", method = RequestMethod.POST)
+    public @ResponseBody ResponseResult getById(@RequestParam String md5Id,
+                                                     HttpServletRequest request) {
+
+        if(null != md5Id && md5Id.length() > 0 ){
+            ResponseResult responseResult = uploadImgService.searchById(md5Id);
+            return responseResult;
+        }
+
+        return null ;
+    }
+
     //测试方法
     @RequestMapping(value="/test", method = RequestMethod.GET)
     public @ResponseBody ResponseResult test(HttpServletRequest request) {

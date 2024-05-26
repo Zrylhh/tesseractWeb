@@ -18,6 +18,7 @@ public class StaticFileConfig extends WebMvcConfigurationSupport {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/").addResourceLocations("classpath:public/index.html");
         registry.addResourceHandler("/**").addResourceLocations("classpath:public/");
         registry.addResourceHandler("/up/**").addResourceLocations("file:" + uploadPath);
         super.addResourceHandlers(registry);

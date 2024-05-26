@@ -17,4 +17,5 @@ public interface UploadImgService {
     public ResponseResult updateText(UpdateTextReq reqDto);
     public ResponseResult searchByText(String ocrText);
     public ResponseResult getRandomImg();
+    public ResponseResult searchById(String md5Id);
 }

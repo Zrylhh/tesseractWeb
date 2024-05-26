@@ -223,4 +223,33 @@ public class UploadImgServiceImpl implements UploadImgService {
         String detect = tika.detect(file);
         System.out.println(detect);
     }
+
+
+    @Override
+    public ResponseResult searchById(String md5Id) {
+        ImgRecord recordInDb = imgRecordDao.select(md5Id);
+        ResponseResult result = new ResponseResult();
+        result.setStatus("ok");
+
+        Map<String,Object> data = new HashMap<>();
+        data.put("img_text",recordInDb.getOcrText());
+        data.put("img_url","/up/"+recordInDb.getMd5Name()+recordInDb.getFileSuffix());
+        data.put("img_md5",recordInDb.getMd5Name());
+        result.setData(data);
+
+        // 查询相关的标签，组合放到返回值中
+        List<ImgTag> tags = imgRecordDao.getTagsById(md5Id);
+        String tagsStr = "";
+        if(tags!=null){
+            for (int i = 0; i < tags.size(); i++) {
+                tagsStr += tags.get(i).getTag();
+                if(i<tags.size()-1){
+                    tagsStr += "\n";
+                }
+            }
+            result.getData().put("img_tags",tagsStr);
+        }
+
+        return result;
+    }
 }
