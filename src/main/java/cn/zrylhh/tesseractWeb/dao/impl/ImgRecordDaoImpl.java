@@ -4,6 +4,9 @@ import cn.zrylhh.tesseractWeb.dao.ImgRecordDao;
 import cn.zrylhh.tesseractWeb.model.ImgRecord;
 import cn.zrylhh.tesseractWeb.model.ImgTag;
 import cn.zrylhh.tesseractWeb.model.UpdateTextReq;
+import cn.zrylhh.tesseractWeb.service.impl.UploadImgServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,7 +32,8 @@ import java.util.List;
 @Repository
 public class ImgRecordDaoImpl implements ImgRecordDao {
     @Autowired
-    private JdbcTemplate jdbcTemplate;  //这个是系统自带的
+    private JdbcTemplate jdbcTemplate;
+    private Logger logger = LoggerFactory.getLogger(ImgRecordDaoImpl.class);
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -86,6 +90,25 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
 
     @Override
     public int updateText(UpdateTextReq reqDto) {
+
+        // 需要考虑重复tag，首先查询然后再插入
+
+        // 插入一条新的记录到
+        String selectSql = "select count(1) as cnt from img_record_update where md5_name = ? and update_ocr_text = ? " ;
+
+        Integer sameCnt = jdbcTemplate.queryForObject(selectSql, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                Integer cnt = rs.getInt("cnt");
+                return cnt;
+            }
+        },reqDto.getImgMd5(),reqDto.getUpdateText().trim());
+        if(sameCnt>0){
+            // 已有则不更新
+            logger.info("已有标签跳过写入，md5:"+reqDto.getImgMd5()+" ，tag:"+reqDto.getUpdateText());
+            return 0;
+        }
+
         // 插入一条新的记录到
         String sql = "insert into img_record_update(`md5_name`,`lsup_time`,`upload_ip`,`update_ocr_text`) " +
                 "values(?,?,?,?)";
@@ -166,6 +189,56 @@ public class ImgRecordDaoImpl implements ImgRecordDao {
                     PreparedStatement preparedStatement = con.prepareStatement(sql);
                     preparedStatement.setString(1,"%"+octText+"%");
                     preparedStatement.setString(2,"%"+octText+"%");
+                    return preparedStatement;
+                }
+            };
+            List<ImgRecord> resultSet = jdbcTemplate.query(creator, new RowMapper<ImgRecord>() {
+                @Override
+                public ImgRecord mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    ImgRecord result = new ImgRecord();
+                    result.setMd5Name(rs.getString("md5_name"));
+                    result.setOriginalName(rs.getString("original_name"));
+                    result.setOcrText(rs.getString("ocr_text"));
+                    result.setLsUpTime(rs.getString("lsup_time"));
+                    result.setUploadIp(rs.getString("upload_ip"));
+                    result.setFilePath(rs.getString("file_path"));
+                    result.setFileSuffix(rs.getString("file_suffix"));
+                    return result;
+                }
+            });
+            return resultSet;
+        }catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+            return null ;
+        }
+    }
+
+
+    @Override
+    public List<ImgRecord> selectByOrcText(String octText,Integer pages,Integer limit) {
+
+        String sql =  "select a.* " +
+                "from  " +
+                "img_record a  " +
+                "join  " +
+                "( " +
+                "   select md5_name from img_record  " +
+                "   where ocr_text like ? " +
+                "   union  " +
+                "   select md5_name from img_record_update  " +
+                "   where update_ocr_text like ? " +
+                ") b on a.md5_name = b.md5_name  " +
+                "order by a.md5_name  limit ? offset ?";
+        try {
+
+            PreparedStatementCreator creator = new PreparedStatementCreator() {
+                @Override
+                public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                    PreparedStatement preparedStatement = con.prepareStatement(sql);
+                    preparedStatement.setString(1,"%"+octText+"%");
+                    preparedStatement.setString(2,"%"+octText+"%");
+                    preparedStatement.setInt(3,limit);
+                    preparedStatement.setInt(4,(pages-1)*limit);
                     return preparedStatement;
                 }
             };

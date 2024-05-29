@@ -36,10 +36,10 @@
         <div class="layui-col-xs6">
             <div  style="margin-left:20px">
                 <div class="layui-input-inline">
-                    <input type="text" name="title" required  lay-verify="required" placeholder="输入关键字" autocomplete="off" class="layui-input">
+                    <input type="text" name="title" required  lay-verify="required" onkeydown=keyboardListen() id="keywords" placeholder="输入关键字" autocomplete="off" class="layui-input">
                 </div>
                 <div class="layui-input-inline">
-                    <button class="layui-btn" lay-submit lay-filter="formDemo">搜索</button>
+                    <button class="layui-btn" lay-filter="start_search" onclick=searchImg(1) >搜索</button>
                 </div>
             </div>
         </div>
@@ -48,8 +48,13 @@
     <div class="layui-row" style="margin-top: 20px;min-height: 260px;" id="search_show_area">
         <!--        search_show_area-->
 
-        <div style="width:150px;height:150px;display:inline-block;margin:5px"><img src="./img/m_right.png" style="max-height:150px;max-width:150px"></div>
+        <div style="width:150px;height:150px;display:inline-block;margin:5px">
+            <img src="./img/m_right.png" style="max-height:150px;max-width:150px">
+            gif图需要下载保存，直接复制只能拿到静图
+        </div>
     </div>
+
+    <div id="page_selector"></div>
 
 
 
@@ -59,16 +64,25 @@
         </fieldset>
         <div class="layui-col-xs6">
 
-            <div ><img src="./img/gacha.jpg" style="max-height:300px;max-width:300px"></div>
+            <div onclick=gachaImg() >
+                <img src="./img/gacha.jpg" style="max-height:300px;max-width:300px">
+                <div style="display:block"> 所有图片均可点击查看详细</div>
+            </div>
         </div>
+    </div>
+
+
+    <div class="layui-row" style="margin-top: 20px;min-height: 260px;margin-bottom:100px" id="gacha_show_area">
+        <!--        search_show_area-->
 
     </div>
+
 </div>
 
 <script id="img_detail">
 
     <div style="padding: 5px; background-color: #393D49; color: #fff; font-weight: 300;">
-        <div style="display:inline-block;max-width:500px;width:40%;text-align:center">
+        <div style="display:inline-block;max-width:500px;width:40%;text-align:center;height:300px">
             <img src='<img_url>' id="img_detail_img" md5_id='<img_id>' style="max-height:100%;max-width:100%">
         </div>
         <div id="ocr_text" style="display:inline-block;width:59%;text-align:center;position:absolute">
@@ -97,6 +111,29 @@
 var $ = layui.jquery, layer = layui.layer;
 var laypage = layui.laypage;
 var upload = layui.upload;
+
+var pageSelector = laypage.render({
+  elem: 'page_selector'
+  ,count: 1000 //数据总数，从服务端得到
+  ,first: false
+  ,last: false
+  ,groups: 10
+  ,limit: 10
+  ,first: '首页'
+  ,last: '尾页'
+  ,jump: function(obj, first){
+    //obj包含了当前分页的所有参数，比如：
+    console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+    console.log(obj.limit); //得到每页显示的条数
+
+    //首次不执行
+    if(!first){
+      //do something
+    }
+
+    searchImg(obj.curr)
+  }
+});
 
 layui.use('laypage', function(){
 
@@ -192,6 +229,69 @@ function showImgDetail(md5_id){
 
             console.log(res);
             openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'],res.data['img_md5'])
+        }
+    })
+}
+
+function searchImg(pages){
+    // 搜索
+    var keyword = $('#keywords').val()
+    if(keyword==null || keyword.length==0){
+        return
+    }
+
+    $.ajax({
+        url:'/api/searchByPage?ocrText='+keyword+'&pages='+pages,
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        processData: true,
+        success:function(res){
+
+            $("#search_show_area")[0].innerHTML = ""
+            console.log(res);
+            imgs = res['data']['imgs']
+
+            for(var i = 0;i<imgs.length;i++){
+                img = imgs[i]
+                var cellDiv = document.createElement("div");
+                cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
+                cellDiv.innerHTML='<img src="'+img['img_url']+'"  onclick=showImgDetail("'+img['img_md5']+'") style="max-width: 150px;">';
+
+                $("#search_show_area")[0].append(cellDiv)
+            }
+
+        }
+    })
+}
+
+$('#keywords').on('keydown',function(event){
+    if(event.keyCode === 13) {
+        // 回车键被按下
+        // 执行相应的操作
+        searchImg(1)
+    }
+})
+
+
+function gachaImg(){
+
+    $.ajax({
+        url:'/api/gacha',
+        type:'post',
+        contentType:'application/json;charset=UTF-8',
+        processData: true,
+        success:function(res){
+            $("#gacha_show_area")[0].innerHTML = ""
+            console.log(res);
+            imgs = res['data']['imgs']
+            for(var i = 0;i<imgs.length;i++){
+                img = imgs[i]
+                var cellDiv = document.createElement("div");
+                cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
+                cellDiv.innerHTML='<img src="'+img['img_url']+'" onclick=showImgDetail("'+img['img_md5']+'") style="max-width: 150px;">';
+
+                $("#gacha_show_area")[0].append(cellDiv)
+            }
         }
     })
 }

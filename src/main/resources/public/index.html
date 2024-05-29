@@ -1,179 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
-<header>
-    <script src="./js/jquery-3.6.0.min.js"></script>
-</header>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>火星表情博物馆</title>
+    <link rel="stylesheet" href="./css/layui.css">
 </head>
 <body>
-    <div id="upload">
-<!--        <h4>上传图片提取图片文字</h4>-->
-        <div style="text-align: center;">
-            <div style="display: inline-block;    height: 300px;width:auto">
-                <div style="    display: inline-block;">
-                    <img src="./img/m_down.png" style="    width: 200px;">
-                    <p>
-                        在这选择图片上传图片
-                        <br>
-                        （动图因为耗时太长不会识别文字）
-                    </p>
-                </div>
-                <input type="file" name="file" id="upload_input"/>
-                <input type="submit" value="上传" onclick="postFile()"/>
-                <img src="" id="upload_shows" style="max-width: 300px;max-height: 300px;">
+<div class="layui-container" style="width:80%;">
+    <div class="layui-row">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>上传图片</legend>
+        </fieldset>
+        <div class="layui-col-xs6" style="text-align: center;">
+            <div class="layui-upload-drag" id="upload_area">
+                <i class="layui-icon"></i>
+                <p>点击上传，或将文件拖拽到此处</p>
             </div>
-
         </div>
-
-        <div style="text-align: center;height: 300px;">
-            <div>
-                <div style="display: inline-block;">
-                    <div style="display: inline-block;">
-                        <img src="./img/m_right.png" style="    width: 200px;">
-                        <p>
-                            这里是识别文字结果
-                            <br>
-                            识别准确度有待提高
-                        </p>
+        <div class="layui-col-xs6">
+            <div class="layui-upload">
+                <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">
+                    点击查看详细：
+                    <div class="layui-upload-list" id="upload_show_area" style="min-height:120px">
                     </div>
-                    <textarea id="ocr_text" readonly style="width: 500px;height: 200px;">
-                </textarea>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-row">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 60px;">
+            <legend>搜索图片</legend>
+        </fieldset>
+        <div class="layui-col-xs6">
+            <div  style="margin-left:20px">
+                <div class="layui-input-inline">
+                    <input type="text" name="title" required  lay-verify="required" onkeydown=keyboardListen() id="keywords" placeholder="输入关键字" autocomplete="off" class="layui-input">
+                </div>
+                <div class="layui-input-inline">
+                    <button class="layui-btn" lay-filter="start_search" onclick=searchImg(1) >搜索</button>
                 </div>
             </div>
         </div>
-        <div style="text-align: center;height: 300px;">
-            <div>
-                <div style="display: inline-block;">
-                    <textarea id="update_text" style="width: 500px;height: 200px;">
-                    </textarea>
-                    <button onclick="updateText()">更新文字</button>
-                    <div style="display: inline-block;">
-                        <img src="./img/m_left.png" style="width:200px">
-                        <p>
-                            这里可以自行更新识别的文字
-                            <br>
-                            感谢您为提高准确度做出的贡献
-                        </p>
-                    </div>
+    </div>
+
+    <div class="layui-row" style="margin-top: 20px;min-height: 260px;" id="search_show_area">
+        <!--        search_show_area-->
+
+        <div style="width:150px;height:150px;display:inline-block;margin:5px">
+            <img src="./img/m_right.png" style="max-height:150px;max-width:150px">
+            gif图需要下载保存，直接复制只能拿到静图
+        </div>
+    </div>
+
+    <div id="page_selector"></div>
+
+
+
+    <div class="layui-row">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 120px;">
+            <legend>十连抽</legend>
+        </fieldset>
+        <div class="layui-col-xs6">
+
+            <div onclick=gachaImg() >
+                <img src="./img/gacha.jpg" style="max-height:300px;max-width:300px">
+                <div style="display:block"> 所有图片均可点击查看详细</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="layui-row" style="margin-top: 20px;min-height: 260px;margin-bottom:100px" id="gacha_show_area">
+        <!--        search_show_area-->
+
+    </div>
+
+</div>
+
+<script id="img_detail">
+
+    <div style="padding: 5px; background-color: #393D49; color: #fff; font-weight: 300;">
+        <div style="display:inline-block;max-width:500px;width:40%;text-align:center;height:300px">
+            <img src='<img_url>' id="img_detail_img" md5_id='<img_id>' style="max-height:100%;max-width:100%">
+        </div>
+        <div id="ocr_text" style="display:inline-block;width:59%;text-align:center;position:absolute">
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">识别结果</label>
+                <div class="layui-input-block">
+                  <textarea placeholder="<ocr_content_text>" id="ocr_content" class="layui-textarea" disabled ></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">已有标签<br>可编辑新增</label>
+                <div class="layui-input-block">
+                  <textarea placeholder="<tags_content_text>" id="tags_content" class="layui-textarea"></textarea>
                 </div>
             </div>
         </div>
     </div>
-    <div id="search" style="margin-bottom: 100px;margin-top: 20px;">
-<!--        <h4>通过文字搜索图片</h4>-->
-        <div style="text-align: center;">
-            <div style="    display: inline-block;">
-                <img src="./img/m_down.png" style="    width: 200px;">
-                <p>在这输入关键字搜索图片</p>
-            </div>
-            <input id="search_text" />
+</script>
 
-            <button onclick="searchImg()">查找图片</button>
-            <div id="show_area">
-
-            </div>
-        </div>
-
-    </div>
-
-
-    <div id="gacha" style="margin-bottom: 100px;margin-top: 20px;">
-        <!--        <h4>十连</h4>-->
-        <div style="text-align: center;">
-            <div style="    display: inline-block;">
-                <img src="./img/gacha.jpg" style="    width: 300px;">
-                <button onclick="gachaImg()">十连抽随机图片</button>
-            </div>
-            <div id="gacha_show_area" style="margin-top:30px">
-
-            </div>
-        </div>
-
-    </div>
-
-<!--    <div style="text-align: center;">-->
-<!--        <div style="    display: inline-block;">-->
-<!--            <img src="./img/m_all.png" style="    width: 200px;">-->
-<!--            <p>占个位子放更新</p>-->
-<!--        </div>-->
-
-<!--    </div>-->
 </body>
 
-<script type="text/javascript">
-function postFile(){
-    var formData = new FormData();
-    formData.append("file",$("#upload_input")[0].files[0]);
-    formData.append("service",'/api/uploadimg');
-    $.ajax({
-        url:'/api/uploadimg', /*接口域名地址*/
-        type:'post',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success:function(res){
-            console.log(res);
-            if(res['status']=='ok'){
-                $("#upload_shows")[0].src=res.data['img_url']
-                $("#upload_shows")[0].md5_data=res.data['img_md5']
-                $("#ocr_text")[0].value=res.data['img_text']
-                $("#update_text")[0].src=res.data['img_text']
-            }
-        }
-    })
-}
-function updateText(){
 
+<!--<script src="./js/jquery-3.6.0.min.js"></script>-->
+<script src="./layui/layui.all.js"></script>
+<script>
+var $ = layui.jquery, layer = layui.layer;
+var laypage = layui.laypage;
+var upload = layui.upload;
 
-    postData = {
-        "imgMd5":$("#upload_shows")[0].md5_data,
-        "updateText":$("#update_text")[0].value
+var pageSelector = laypage.render({
+  elem: 'page_selector'
+  ,count: 1000 //数据总数，从服务端得到
+  ,first: false
+  ,last: false
+  ,groups: 10
+  ,limit: 10
+  ,first: '首页'
+  ,last: '尾页'
+  ,jump: function(obj, first){
+    //obj包含了当前分页的所有参数，比如：
+    console.log(obj.curr); //得到当前页，以便向服务端请求对应页的数据。
+    console.log(obj.limit); //得到每页显示的条数
+
+    //首次不执行
+    if(!first){
+      //do something
     }
+
+    searchImg(obj.curr)
+  }
+});
+
+layui.use('laypage', function(){
+
+  //不显示首页尾页
+  laypage.render({
+    elem: 'search_page'
+    ,count: 100
+    ,first: false
+    ,last: false
+  });
+});
+
+function openImgDetailLayer(imgUrl,ocrText,tagsText,imgId){
+
+    show_img_str = $('#img_detail').text().replace('<img_url>',imgUrl)
+    show_img_str = show_img_str.replace('<ocr_content_text>',ocrText)
+    show_img_str = show_img_str.replace('<tags_content_text>',tagsText)
+    show_img_str = show_img_str.replace('<img_id>',imgId)
+
+    layer.open({
+        type: 1
+        ,title: 'OCR识别文字与标签'
+        ,closeBtn: false
+        ,area: '800px'
+        ,shade: 0.8
+        ,offset: 'auto'
+        ,id: 'LAY_show_img_detail'
+        ,btn: ['提交', '取消']
+        ,yes: function(index, layero){
+            //
+            console.log('commit')
+            var newTags = $("#tags_content").val()
+            if(newTags!=null && newTags.length>0){
+                postData = {
+                    "imgMd5":$("#img_detail_img").attr('md5_id'),
+                    "updateText": newTags
+                }
+                $.ajax({
+                    url:'/api/updateText',
+                    type:'post',
+                    contentType:'application/json;charset=UTF-8',
+                    data: JSON.stringify(postData),
+                    processData: true,
+                    success:function(res){
+                        console.log("感谢更新");
+                        layer.closeAll();
+                    }
+                })
+            }else{
+                layer.closeAll();
+            }
+
+
+        }
+        ,btn2: function(index, layero){
+            //
+        }
+        ,btnAlign: 'c'
+        ,moveType: 1 //拖拽模式，0或者1
+        ,content: show_img_str
+        ,scrollbar: false
+        ,offset: 'auto'
+        ,success: function(){
+            // 添加标签
+        }
+    });
+}
+
+layui.use('upload', function(){
+  //拖拽上传
+  upload.render({
+    elem: '#upload_area'
+    ,url: '/api/uploadimg/'
+    ,done: function(res){
+        console.log(res)
+        if(res['status']=='ok'){
+            $("#upload_show_area").html('<img src="'+res.data['img_url']+'" onclick=showImgDetail("'+res.data['img_md5']+'")  style="max-height:400px;max-width:400px" class="layui-upload-img">')
+            openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'],res.data['img_md5'])
+
+        }
+    }
+  });
+});
+
+function showImgDetail(md5_id){
+    //查询
     $.ajax({
-        url:'/api/updateText',
+        url:'/api/getById?md5Id='+md5_id,
         type:'post',
         contentType:'application/json;charset=UTF-8',
-        data: JSON.stringify(postData),
         processData: true,
         success:function(res){
-            console.log("感谢更新");
 
+            console.log(res);
+            openImgDetailLayer(res.data['img_url'],res.data['img_text'],res.data['img_tags'],res.data['img_md5'])
         }
     })
 }
 
-function searchImg(){
+function searchImg(pages){
+    // 搜索
+    var keyword = $('#keywords').val()
+    if(keyword==null || keyword.length==0){
+        return
+    }
 
-
-    searchText = $("#search_text")[0].value
     $.ajax({
-        url:'/api/search?ocrText='+searchText,
+        url:'/api/searchByPage?ocrText='+keyword+'&pages='+pages,
         type:'post',
         contentType:'application/json;charset=UTF-8',
         processData: true,
         success:function(res){
-            $("#show_area")[0].innerHTML = ""
+
+            $("#search_show_area")[0].innerHTML = ""
             console.log(res);
             imgs = res['data']['imgs']
+
             for(var i = 0;i<imgs.length;i++){
                 img = imgs[i]
                 var cellDiv = document.createElement("div");
                 cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
-                cellDiv.innerHTML='<img src="'+img['img_url']+'" style="max-width: 150px;">';
+                cellDiv.innerHTML='<img src="'+img['img_url']+'"  onclick=showImgDetail("'+img['img_md5']+'") style="max-width: 150px;">';
 
-<!--                showImg =  new Image()-->
-<!--                showImg.src = img['img_url']-->
-<!--                showImg.style = "max-width: 150px;"-->
-
-<!--                cellCss = '<div style="width:150px;height:150px"><img src="'+img['img_url']+'" style="max-width: 150px;"></div>';-->
-
-                $("#show_area")[0].append(cellDiv)
+                $("#search_show_area")[0].append(cellDiv)
             }
+
         }
     })
 }
+
+$('#keywords').on('keydown',function(event){
+    if(event.keyCode === 13) {
+        // 回车键被按下
+        // 执行相应的操作
+        searchImg(1)
+    }
+})
 
 
 function gachaImg(){
@@ -191,12 +288,14 @@ function gachaImg(){
                 img = imgs[i]
                 var cellDiv = document.createElement("div");
                 cellDiv.style = "width:150px;height:150px;display:inline-block;margin:5px"
-                cellDiv.innerHTML='<img src="'+img['img_url']+'" style="max-width: 150px;">';
+                cellDiv.innerHTML='<img src="'+img['img_url']+'" onclick=showImgDetail("'+img['img_md5']+'") style="max-width: 150px;">';
 
                 $("#gacha_show_area")[0].append(cellDiv)
             }
         }
     })
 }
+
 </script>
+
 </html>

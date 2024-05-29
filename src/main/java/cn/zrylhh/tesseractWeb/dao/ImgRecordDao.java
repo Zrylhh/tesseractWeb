@@ -21,4 +21,5 @@ public interface ImgRecordDao {
     public List<ImgRecord> selectByOrcText(String octText);
     public List<ImgRecord> getRandomImg(Integer number);
     public List<ImgTag> getTagsById(String md5Id);
+    public List<ImgRecord> selectByOrcText(String octText,Integer pages,Integer limit);
 }

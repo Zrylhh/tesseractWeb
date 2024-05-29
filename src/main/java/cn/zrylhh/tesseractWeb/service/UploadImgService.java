@@ -18,4 +18,5 @@ public interface UploadImgService {
     public ResponseResult searchByText(String ocrText);
     public ResponseResult getRandomImg();
     public ResponseResult searchById(String md5Id);
+    public ResponseResult searchByTextPages(String ocrText,Integer pages);
 }

@@ -58,12 +58,16 @@ public class MainController {
     }
 
     //处理
-    @RequestMapping(value="/search", method = RequestMethod.POST)
-    public @ResponseBody ResponseResult searchByText(@RequestParam String ocrText,
+    @RequestMapping(value="/searchByPage", method = RequestMethod.POST)
+    public @ResponseBody ResponseResult searchByText(@RequestParam String ocrText,@RequestParam Integer pages,
                                                    HttpServletRequest request) {
 
         if(null != ocrText && ocrText.length() > 0 ){
-            ResponseResult responseResult = uploadImgService.searchByText(ocrText);
+//            ResponseResult responseResult = uploadImgService.searchByText(ocrText);
+            if(pages==null || pages < 0){
+                pages = 0;
+            }
+            ResponseResult responseResult = uploadImgService.searchByTextPages(ocrText,pages);
             return responseResult;
         }
 
